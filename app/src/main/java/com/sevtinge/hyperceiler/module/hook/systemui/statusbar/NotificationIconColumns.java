@@ -27,21 +27,20 @@ public class NotificationIconColumns extends BaseHook {
     public void init() {
         int maxIconsNum;
         if (!isAndroidVersion(30)) {
-            int maxDotsNum = mPrefsMap.getInt("system_ui_status_bar_notification_dots_maximum", 3);
             if (isMoreHyperOSVersion(1f)) {
                 maxIconsNum = mPrefsMap.getInt("system_ui_status_bar_notification_icon_maximum", 1);
             } else {
                 maxIconsNum = mPrefsMap.getInt("system_ui_status_bar_notification_icon_maximum", 3);
             }
             if (isMoreAndroidVersion(34)) {
-                mAndroidU(maxIconsNum, maxDotsNum);
+                mAndroidU(maxIconsNum);
             } else {
-                mAndroidS(maxIconsNum, maxDotsNum);
+                mAndroidS(maxIconsNum);
             }
         }
     }
 
-    public void mAndroidU(int maxIconsNum, int maxDotsNum) {
+    public void mAndroidU(int maxIconsNum) {
         hookAllConstructors("com.android.systemui.statusbar.policy.NotificationIconObserver",
             new MethodHook() {
                 @Override
@@ -137,14 +136,13 @@ public class NotificationIconColumns extends BaseHook {
         }
     }
 
-    public void mAndroidS(int maxIconsNum, int maxDotsNum) {
+    public void mAndroidS(int maxIconsNum) {
         findAndHookMethod("com.android.systemui.statusbar.phone.NotificationIconContainer",
             "miuiShowNotificationIcons", boolean.class,
             new MethodHook() {
                 @Override
                 protected void before(MethodHookParam param) {
                     if ((boolean) param.args[0]) {
-                        XposedHelpers.setObjectField(param.thisObject, "MAX_DOTS", maxDotsNum);
                         XposedHelpers.setObjectField(param.thisObject, "MAX_STATIC_ICONS", maxIconsNum);
                         if (isAndroidVersion(33)) {
                             XposedHelpers.setObjectField(param.thisObject, "MAX_ICONS_ON_LOCKSCREEN", maxIconsNum);

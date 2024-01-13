@@ -24,8 +24,8 @@ android {
         applicationId namespace
         minSdk 30
         targetSdk 34
-        versionCode 136
-        versionName "2.3.136"
+        versionCode 137
+        versionName '2.3.137-Horange'
         project.archivesBaseName = "HyperCeiler"
         ndk {
             // noinspection ChromeOsAbiSupport
@@ -90,7 +90,7 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-log.pro'
-            versionNameSuffix "_" + DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDateTime.now())
+//            versionNameSuffix "_" + DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDateTime.now())
             buildConfigField "String", "GIT_HASH", "\"${getGitHash()}\""
             if (keyStoreFile != null) {
                 signingConfig signingConfigs.hyperceiler
@@ -126,12 +126,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_19
-        targetCompatibility JavaVersion.VERSION_19
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_19.toString()
+        jvmTarget = JavaVersion.VERSION_21.toString()
     }
 
 }

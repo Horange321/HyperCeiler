@@ -4,6 +4,9 @@
 
 # HyperCeiler
 
+## Horange
+[原仓库](https://github.com/ReChronoRain/HyperCeiler)已恢复更新。这个仓库不再被需要了。
+
 ### Make HyperOS Great Again!
 
 简体中文&nbsp;&nbsp;|&nbsp;&nbsp;[English](/README_en-US.md)

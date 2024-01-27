@@ -24,7 +24,7 @@ android {
         applicationId namespace
         minSdk 30
         targetSdk 34
-        versionCode 139
+        versionCode 138
         versionName 'beta-Horange'
         project.archivesBaseName = "HyperCeiler"
         ndk {
@@ -44,6 +44,9 @@ android {
     }
 
     androidResources {
+        additionalParameters += "--allow-reserved-package-id"
+        additionalParameters += "--package-id"
+        additionalParameters += "0x77"
         generateLocaleConfig = true
     }
 
@@ -108,7 +111,7 @@ android {
         }
         canary {
             minifyEnabled true
-            shrinkResources false
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             versionNameSuffix "_" + DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDateTime.now()) + "_" + getGitRevision()
             buildConfigField "String", "GIT_HASH", "\"${getGitHash()}\""

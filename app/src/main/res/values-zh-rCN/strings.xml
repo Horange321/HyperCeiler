@@ -802,6 +802,7 @@
 
     <string name="system_ui_other_title">其他</string>
     <string name="system_ui_disable_volume">原生音量条</string>
+    <string name="system_ui_disable_volume_desc">小米音量条的修改无法作用于原生音量条</string>
     <string name="system_ui_charge_animation_title">充电动画</string>
     <string name="system_ui_charge_animation_style">充电动画样式</string>
     <string name="system_ui_charge_animation_style_desc">选择锁屏充电动画样式</string>
@@ -1297,6 +1298,8 @@
     <string name="security_center_newbox_title">全局侧边栏</string>
     <string name="security_center_dolby_open">关闭杜比弹窗</string>
     <string name="security_center_show_battery_temperature">显示电池温度</string>
+    <string name="security_center_show_battery_health">显示具体电池健康度</string>
+    <string name="security_center_show_battery_health_desc">仅支持较新的版本</string>
     <string name="security_center_ai_clipboard">剪贴板隐私保护</string>
     <string name="security_center_blur_location">模糊定位</string>
     <string name="security_center_gms_open">GMS 开关</string>

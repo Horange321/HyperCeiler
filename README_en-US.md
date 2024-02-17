@@ -1,6 +1,6 @@
 <div align="center">
 
-<img width="" src="/imgs/icon.png" width=160 height=160 align="center">
+<img src="/imgs/icon.png" width="160" height="160" style="display: block; margin: 0 auto;" alt="icon">
 
 # HyperCeiler
 
@@ -76,16 +76,12 @@ HyperCeiler has stopped maintaining the MIUI ROM of Android 11-12, except for th
 | GetApps                    | com.xiaomi.market                  |
 | App vault                  | com.miui.personalassistant         |
 | Themes                     | com.android.thememanager           |
-| com.miui.rom               | com.miui.rom                       |
 | MIUI Security Components   | com.miui.guardprovider             |
-| Clock                      | com.android.deskclock              |
 | Camera                     | com.android.camera                 |
 | Mi AI Translate            | com.xiaomi.aiasst.vision           |
 | Mi AI Suggestions          | com.xiaomi.aireco                  |
 | Scanner                    | com.xiaomi.scanner                 |
 | Mi AI                      | com.miui.voiceassist               |
-| Music                      | com.miui.player                    |
-| MIUI+                      | com.xiaomi.mirror                  |
 | NetworkBoost               | com.xiaomi.NetworkBoost            |
 | NFC Service                | com.android.nfc                    |
 | Earphones                  | com.miui.misound                   |

@@ -788,6 +788,7 @@
 
     <string name="system_ui_other_title">Other</string>
     <string name="system_ui_disable_volume">Native volume bar</string>
+    <string name="system_ui_disable_volume_desc">The modification of Xiaomi\'s volume bar does not apply to the native volume bar</string>
     <string name="system_ui_charge_animation_title">Charge animation</string>
     <string name="system_ui_charge_animation_style">Charging animation style</string>
     <string name="system_ui_charge_animation_style_desc">Select the lock screen charging animation style</string>
@@ -1274,6 +1275,8 @@
     <string name="security_center_newbox_title">Sidebar</string>
     <string name="security_center_dolby_open">Close the Dolby pop-up window</string>
     <string name="security_center_show_battery_temperature">Show battery temperature</string>
+    <string name="security_center_show_battery_health">Show detailed battery health</string>
+    <string name="security_center_show_battery_health_desc">Only newer versions supported</string>
     <string name="security_center_ai_clipboard">Protect clipboard</string>
     <string name="security_center_blur_location">Lower positioning accuracy</string>
     <string name="security_center_gms_open">GMS Service</string>

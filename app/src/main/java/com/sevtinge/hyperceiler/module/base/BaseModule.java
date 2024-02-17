@@ -20,6 +20,7 @@ package com.sevtinge.hyperceiler.module.base;
 
 import android.os.Handler;
 
+import com.github.kyuubiran.ezxhelper.EzXHelper;
 import com.sevtinge.hyperceiler.XposedInit;
 import com.sevtinge.hyperceiler.module.base.dexkit.InitDexKit;
 import com.sevtinge.hyperceiler.module.base.tool.ResourcesTool;
@@ -46,19 +47,20 @@ public abstract class BaseModule implements IXposedHook {
     }
 
     public void init(LoadPackageParam lpparam) {
+        EzXHelper.initHandleLoadPackage(lpparam);
+        EzXHelper.setLogTag(TAG);
+        EzXHelper.setToastTag(TAG);
         // 把模块资源加载到目标应用
         try {
             if (!ProjectApi.mAppModulePkg.equals(lpparam.packageName)) {
                 Handler handler = new Handler();
-                ContextUtils.getWaitContext(context -> {
-                        handler.post(
-                            () -> {
-                                if (context != null) {
-                                    ResourcesTool.loadModuleRes(context);
-                                }
-                            }
-                        );
+                ContextUtils.getWaitContext(context -> handler.post(
+                    () -> {
+                        if (context != null) {
+                            ResourcesTool.loadModuleRes(context);
+                        }
                     }
+                )
                     , "android".equals(lpparam.packageName));
             }
         } catch (Throwable e) {

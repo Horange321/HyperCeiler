@@ -1,21 +1,21 @@
 /*
-  * This file is part of HyperCeiler.
+ * This file is part of HyperCeiler.
 
-  * HyperCeiler is free software: you can redistribute it and/or modify
-  * it under the terms of the GNU Affero General Public License as
-  * published by the Free Software Foundation, either version 3 of the
-  * License.
+ * HyperCeiler is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License.
 
-  * This program is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
 
-  * You should have received a copy of the GNU Affero General Public License
-  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-  * Copyright (C) 2023-2024 HyperCeiler Contributions
-*/
+ * Copyright (C) 2023-2024 HyperCeiler Contributions
+ */
 package com.sevtinge.hyperceiler.ui.fragment.settings.development;
 
 import static com.sevtinge.hyperceiler.utils.Helpers.isModuleActive;
@@ -26,6 +26,7 @@ import static com.sevtinge.hyperceiler.utils.devicesdk.DeviceSDKKt.getFingerPrin
 import static com.sevtinge.hyperceiler.utils.devicesdk.DeviceSDKKt.getLanguage;
 import static com.sevtinge.hyperceiler.utils.devicesdk.DeviceSDKKt.getLocale;
 import static com.sevtinge.hyperceiler.utils.devicesdk.DeviceSDKKt.getManufacture;
+import static com.sevtinge.hyperceiler.utils.devicesdk.DeviceSDKKt.getMarketName;
 import static com.sevtinge.hyperceiler.utils.devicesdk.DeviceSDKKt.getModelName;
 import static com.sevtinge.hyperceiler.utils.devicesdk.DeviceSDKKt.getSerial;
 import static com.sevtinge.hyperceiler.utils.devicesdk.DeviceSDKKt.getSoc;
@@ -36,7 +37,6 @@ import static com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.getHyperOSVer
 import static com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.getMiuiVersion;
 import static com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.getRomAuthor;
 import static com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.getSystemVersionIncremental;
-import static com.sevtinge.hyperceiler.utils.shell.ShellUtils.checkRootPermission;
 
 import android.widget.TextView;
 
@@ -45,6 +45,7 @@ import com.sevtinge.hyperceiler.R;
 import com.sevtinge.hyperceiler.ui.MainActivityContextHelper;
 import com.sevtinge.hyperceiler.ui.fragment.base.SettingsPreferenceFragment;
 import com.sevtinge.hyperceiler.utils.api.ProjectApi;
+import com.sevtinge.hyperceiler.utils.shell.ShellInit;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -56,7 +57,6 @@ public class DevelopmentDebugInfoFragment extends SettingsPreferenceFragment {
     private Preference mDebugInfo;
     MainActivityContextHelper mainActivityContextHelper;
     TextView m;
-    public static String test;
 
 
     @Override
@@ -89,7 +89,8 @@ public class DevelopmentDebugInfoFragment extends SettingsPreferenceFragment {
         } catch (Exception ignored) {
         }
         try {
-            propertiesDevice.put("Device", getDeviceName());
+            propertiesDevice.put("DeviceName", getDeviceName());
+            propertiesDevice.put("MarketName", getMarketName());
             propertiesDevice.put("Model", getModelName());
             propertiesDevice.put("Brand", getBrand());
             propertiesDevice.put("Manufacture", getManufacture());
@@ -99,7 +100,8 @@ public class DevelopmentDebugInfoFragment extends SettingsPreferenceFragment {
             propertiesDevice.put("Locale", getLocale());
             propertiesDevice.put("Language", getLanguage());
             propertiesDevice.put("AndroidId", mainActivityContextHelper.getAndroidId());
-            propertiesDevice.put("Serial", getSerial());
+            //
+            // propertiesDevice.put("Serial", getSerial());
         } catch (Exception ignored) {
         }
         try {
@@ -118,8 +120,7 @@ public class DevelopmentDebugInfoFragment extends SettingsPreferenceFragment {
             propertiesCheck.put("Signature", mainActivityContextHelper.getSHA256Signature());
             propertiesCheck.put("SignCheckPass", String.valueOf(mainActivityContextHelper.isSignCheckPass()));
             propertiesCheck.put("ModuleActive", String.valueOf(isModuleActive));
-            propertiesCheck.put("RootPermission", String.valueOf(checkRootPermission() == 0));
-            propertiesCheck.put("Test", test);
+            propertiesCheck.put("RootPermission", String.valueOf(ShellInit.ready()));
         } catch (Exception ignored) {
         }
 

@@ -16,12 +16,11 @@
 
   * Copyright (C) 2023-2024 HyperCeiler Contributions
 */
-package com.sevtinge.hyperceiler.module.hook.systemui.statusbar;
+package com.sevtinge.hyperceiler.module.hook.systemui.statusbar.model;
 
 import static com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.isMoreHyperOSVersion;
 
 import android.view.View;
-import android.widget.TextView;
 
 import com.sevtinge.hyperceiler.module.base.BaseHook;
 
@@ -29,19 +28,20 @@ import de.robv.android.xposed.XC_MethodHook.MethodHookParam;
 import de.robv.android.xposed.XposedHelpers;
 
 public class MobileNetwork extends BaseHook {
-
     Class<?> mStatusBarMobileView;
     Class<?> mMobileIconState;
     Class<?> mHDController;
 
     @Override
     public void init() {
-
         mStatusBarMobileView = findClassIfExists("com.android.systemui.statusbar.StatusBarMobileView");
         mMobileIconState = findClassIfExists("com.android.systemui.statusbar.phone.StatusBarSignalPolicy$MobileIconState");
-
         mHDController = findClassIfExists("com.android.systemui.statusbar.policy.HDController");
 
+        hideMobileHD(); // 隐藏小 HD、单卡 HD 以及双卡 HD
+    }
+
+    private void hideMobileHD() {
         try {
             mStatusBarMobileView.getDeclaredMethod("initViewState", mMobileIconState);
             findAndHookMethod(mStatusBarMobileView, "initViewState", mMobileIconState, new MethodHook() {
@@ -54,8 +54,7 @@ public class MobileNetwork extends BaseHook {
         } catch (NoSuchMethodException e) {
             try {
                 mStatusBarMobileView.getDeclaredMethod("applyMobileState", mMobileIconState);
-                findAndHookMethod(mStatusBarMobileView,
-                    "applyMobileState", mMobileIconState, new MethodHook() {
+                findAndHookMethod(mStatusBarMobileView, "applyMobileState", mMobileIconState, new MethodHook() {
                         @Override
                         protected void after(MethodHookParam param) {
                             updateIconState(param, "mSmallHd", "system_ui_status_bar_icon_small_hd");
@@ -76,77 +75,15 @@ public class MobileNetwork extends BaseHook {
             }
         });
 
-        hookAllMethods(mStatusBarMobileView, "applyMobileState", new MethodHook() {
-            @Override
-            protected void after(MethodHookParam param) {
-                int qpt = mPrefsMap.getStringAsInt("system_ui_status_bar_icon_mobile_network_type", 0);
-                boolean singleMobileType = mPrefsMap.getBoolean("system_ui_statusbar_mobile_type_enable");
-                boolean hideIndicator = mPrefsMap.getBoolean("system_ui_status_bar_mobile_indicator");
-                View mMobileType = getMobileType(param, qpt, singleMobileType);
-                // 隐藏移动网络活动指示器
-                View mLeftInOut = (View) XposedHelpers.getObjectField(param.thisObject, "mLeftInOut");
-                if (hideIndicator) {
-                    View mRightInOut = (View) XposedHelpers.getObjectField(param.thisObject, "mRightInOut");
-                    mLeftInOut.setVisibility(View.GONE);
-                    mRightInOut.setVisibility(View.GONE);
-                }
-                if (mMobileType.getVisibility() == View.GONE && mLeftInOut.getVisibility() == View.GONE) {
-                    View mMobileLeftContainer = (View) XposedHelpers.getObjectField(param.thisObject, "mMobileLeftContainer");
-                    mMobileLeftContainer.setVisibility(View.GONE);
-                }
-            }
-        });
-
         findAndHookMethod(mHDController, "update", new MethodHook() {
             @Override
             protected void before(MethodHookParam param) {
                 int opt = mPrefsMap.getStringAsInt("system_ui_status_bar_icon_new_hd", 0);
                 if (opt > 0 && !isMoreHyperOSVersion(1f)) {
-                    XposedHelpers.setBooleanField(param.thisObject, "mWifiAvailable", opt == 1 ? false : opt == 2);
+                    XposedHelpers.setBooleanField(param.thisObject, "mWifiAvailable", opt == 2);
                 }
             }
         });
-
-
-        // 信号
-        /*hookAllMethods("com.android.systemui.statusbar.StatusBarMobileView", "applyMobileState", new MethodHook() {
-            @Override
-            protected void after(MethodHookParam param) throws Throwable {
-                XposedHelpers.callMethod(param.thisObject, "setVisibility", View.GONE);
-            }
-        });*/
-    }
-
-    private static View getMobileType(MethodHookParam param, int qpt, boolean singleMobileType) {
-        View mMobileType = (View) XposedHelpers.getObjectField(param.thisObject, "mMobileType");
-        boolean dataConnected = (boolean) XposedHelpers.getObjectField(param.args[0], "dataConnected");
-        if (qpt > 0) {
-            if (qpt == 1) {
-                if (singleMobileType) {
-                    TextView mMobileTypeSingle = (TextView) XposedHelpers.getObjectField(param.thisObject, "mMobileTypeSingle");
-                    mMobileTypeSingle.setVisibility(View.VISIBLE);
-                } else {
-                    mMobileType.setVisibility(View.VISIBLE);
-                }
-            }
-            if (qpt == 3 && !dataConnected) {
-                if (singleMobileType) {
-                    TextView mMobileTypeSingle = (TextView) XposedHelpers.getObjectField(param.thisObject, "mMobileTypeSingle");
-                    mMobileTypeSingle.setVisibility(View.GONE);
-                } else {
-                    mMobileType.setVisibility(View.GONE);
-                }
-            }
-            if (qpt == 2) {
-                if (singleMobileType) {
-                    TextView mMobileTypeSingle = (TextView) XposedHelpers.getObjectField(param.thisObject, "mMobileTypeSingle");
-                    mMobileTypeSingle.setVisibility(View.GONE);
-                } else {
-                    mMobileType.setVisibility(View.GONE);
-                }
-            }
-        }
-        return mMobileType;
     }
 
     private void updateIconState(MethodHookParam param, String fieldName, String key) {
@@ -167,6 +104,5 @@ public class MobileNetwork extends BaseHook {
                 view.setVisibility(View.VISIBLE);
             }
         }
-
     }
 }

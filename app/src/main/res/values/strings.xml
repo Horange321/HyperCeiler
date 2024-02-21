@@ -267,6 +267,7 @@
     <string name="charge_animation_entries_alpha">Rhythm</string>
     <string name="status_bar_icon_mode_default">Default</string>
     <string name="status_bar_icon_mode_on">Always show</string>
+    <string name="status_bar_icon_mode_on_non_wifi">Always shown when not on WiFi</string>
     <string name="status_bar_icon_mode_off">Always hidden</string>
     <string name="status_bar_icon_mode_on_control_center">Only show in Control Center</string>
     <string name="status_bar_icon_mode_on_status_bar">Only show at Status bar</string>
@@ -561,8 +562,8 @@
     <string name="system_ui_statusbar_iconmanage_mobile_network_icon_style">Icon styles</string>
     <string name="system_ui_statusbar_iconmanage_mobile_network_icon_size">Icon scaling</string>
     <string name="system_ui_status_bar_mobile_type_single">Mobile network type icon display separately</string>
+    <string name="system_ui_status_bar_mobile_type_single_desc">This feature is turned off because the mobile network type icon is always hidden</string>
     <string name="system_ui_status_bar_mobile_type_left">Display at left of signal</string>
-    <string name="system_ui_status_bar_mobile_type_only_show_network">Show only network cards</string>
     <string name="system_ui_status_bar_mobile_indicator">Hide mobile network activity indicators</string>
     <string name="system_ui_status_bar_mobile_type_custom">Custom text</string>
     <string name="system_ui_statusbar_mobile_type_font_size">Font size</string>
@@ -579,6 +580,8 @@
     <string name="system_ui_statusbar_iconmanage_battery_title">Battery</string>
     <string name="system_ui_statusbar_iconmanage_call_title">Call</string>
     <string name="system_ui_statusbar_iconmanage_devices_title">Devices</string>
+    <string name="system_ui_statusbar_iconmanage_internet_title">Network</string>
+    <string name="system_ui_statusbar_iconmanage_privacy_title">Privacy</string>
     <string name="system_ui_statusbar_iconmanage_left_title">The left side of the icon shows</string>
     <string name="system_ui_statusbar_iconmanage_right_title">The right side of the icon shows</string>
     <string name="system_ui_status_bar_icon_wifi">Wi-Fi</string>
@@ -597,6 +600,7 @@
     <string name="system_ui_status_bar_icon_mobile_network_type">Display logic</string>
     <string name="system_ui_status_bar_big_mobile_network_type">Big Network Type Icon</string>
     <string name="system_ui_status_bar_icon_location">Location</string>
+    <string name="system_ui_status_bar_icon_mic">Microphone</string>
     <string name="system_ui_status_bar_icon_alarm_clock">Alarm Clock</string>
     <string name="system_ui_status_bar_icon_alarm_clock_n">Show alarm icon only before alarm goes off</string>
     <string name="system_ui_status_bar_icon_alarm_clock_n_format">%d hours</string>

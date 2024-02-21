@@ -16,15 +16,15 @@
 
  * Copyright (C) 2023-2024 HyperCeiler Contributions
  */
-package com.sevtinge.hyperceiler.module.hook.systemui.statusbar;
+package com.sevtinge.hyperceiler.module.hook.systemui.statusbar.model;
 
+import static com.sevtinge.hyperceiler.utils.devicesdk.AppUtilsKt.dp2px;
 import static com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.isMoreHyperOSVersion;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.util.SparseIntArray;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -36,24 +36,31 @@ import com.sevtinge.hyperceiler.utils.api.ProjectApi;
 import java.util.HashMap;
 import java.util.List;
 
+import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
 
 public class DualRowSignalHook extends BaseHook {
+    private final int rightMargin = mPrefsMap.getInt("system_ui_statusbar_mobile_network_icon_right_margin", 0);
+    private final int leftMargin = mPrefsMap.getInt("system_ui_statusbar_mobile_network_icon_left_margin", 0);
+    private final int iconScale = mPrefsMap.getInt("system_ui_statusbar_mobile_network_icon_size", 10); // 图标缩放
+    private final int verticalOffset = mPrefsMap.getInt("system_ui_statusbar_mobile_network_icon_vertical_offset", 8);
+    private final boolean mobileTypeSingle = mPrefsMap.getBoolean("system_ui_statusbar_mobile_type_enable"); // 移动网络类型单独显示
+    private final String selectedIconStyle = mPrefsMap.getString("system_ui_status_mobile_network_icon_style", ""); // 图标样式
+    private final int selectedIconTheme = mPrefsMap.getStringAsInt("system_ui_statusbar_iconmanage_mobile_network_icon_theme", 1); // 图标主题
+    // 移动网络和WiFi网络都移动到左侧
+    private  final boolean moveSignalLeft = (mPrefsMap.getBoolean("system_ui_status_bar_wifi_at_left") || mPrefsMap.getBoolean("system_ui_status_bar_mobile_network_at_left"));
 
     @Override
     public void init() {
-        boolean mobileTypeSingle = mPrefsMap.getBoolean("system_ui_statusbar_mobile_type_enable"); // 移动网络类型单独显示
-        if (!mobileTypeSingle) {
+         if (!mobileTypeSingle) {
             mResHook.setDensityReplacement("com.android.systemui", "dimen", "status_bar_mobile_type_half_to_top_distance", 3);
             mResHook.setDensityReplacement("com.android.systemui", "dimen", "status_bar_mobile_left_inout_over_strength", 0);
-            mResHook.setDensityReplacement("com.android.systemui", "dimen", "status_bar_mobile_type_middle_to_strength_start", Float.valueOf(-0.4f));
+            mResHook.setDensityReplacement("com.android.systemui", "dimen", "status_bar_mobile_type_middle_to_strength_start", -0.4f);
         }
 
-        HashMap<String, Integer> dualSignalResMap = new HashMap<String, Integer>();
+        HashMap<String, Integer> dualSignalResMap = new HashMap<>();
         String[] colorModeList = {"", "dark", "tint"};
-//        String[] iconStyles = {"", "thick", "theme"};
-        String selectedIconStyle = mPrefsMap.getString("system_ui_status_mobile_network_icon_style", ""); // 图标样式
-        int selectedIconTheme = mPrefsMap.getStringAsInt("system_ui_statusbar_iconmanage_mobile_network_icon_theme", 1); // 图标主题
+        // String[] iconStyles = {"", "thick", "theme"};
 
         findAndHookMethod("com.android.systemui.SystemUIApplication", "onCreate", new MethodHook() {
             private boolean isHooked = false;
@@ -67,13 +74,14 @@ public class DualRowSignalHook extends BaseHook {
                     for (int slot = 1; slot <= 2; slot++) {
                         for (int lvl = 0; lvl <= 5; lvl++) {
                             for (String colorMode : colorModeList) {
+                                String colorModeEq = !colorMode.equals("") ? ("_" + colorMode) : "";
                                 if (selectedIconTheme == 1) {
-                                    String dualIconResName = "statusbar_signal_classic_" + slot + "_" + lvl + (!colorMode.equals("") ? ("_" + colorMode) : "");
+                                    String dualIconResName = "statusbar_signal_classic_" + slot + "_" + lvl + colorModeEq;
                                     int iconResId = modRes.getIdentifier(dualIconResName, "drawable", ProjectApi.mAppModulePkg);
                                     dualSignalResMap.put(dualIconResName, iconResId);
                                 } else if (selectedIconTheme == 2) {
                                     if (!selectedIconStyle.equals("theme") || !colorMode.equals("tint")) {
-                                        String dualIconResName = "statusbar_signal_oa_" + slot + "_" + lvl + (!colorMode.equals("") ? ("_" + colorMode) : "") + (!selectedIconStyle.equals("") ? ("_" + selectedIconStyle) : "");
+                                        String dualIconResName = "statusbar_signal_oa_" + slot + "_" + lvl + colorModeEq + (!selectedIconStyle.equals("") ? ("_" + selectedIconStyle) : "");
                                         int iconResId = modRes.getIdentifier(dualIconResName, "drawable", ProjectApi.mAppModulePkg);
                                         dualSignalResMap.put(dualIconResName, iconResId);
                                     }
@@ -85,17 +93,21 @@ public class DualRowSignalHook extends BaseHook {
             }
         });
 
+        setDualRowIcon(); // 设置双排图标
+        getMobileLevel(); // 获取信号强度及隐藏小 hd
+        resetImageDrawable(dualSignalResMap); // 刷新图标视图
+        setDualRowStyle(); // 调整双排移动网络位置及缩放
+    }
 
+    private void setDualRowIcon() {
         SparseIntArray signalResToLevelMap = new SparseIntArray();
-        // 移动网络和WiFi网络都移动到左侧
-        boolean moveSignalLeft = (mPrefsMap.getBoolean("system_ui_status_bar_wifi_at_left") || mPrefsMap.getBoolean("system_ui_status_bar_mobile_network_at_left"));
         String ControllerImplName = moveSignalLeft ? "MiuiDripLeftStatusBarIconControllerImpl" : "StatusBarIconControllerImpl";
         hookAllMethods("com.android.systemui.statusbar.phone." + ControllerImplName, lpparam.classLoader, "setMobileIcons", new MethodHook() {
             private boolean isHooked = false;
 
             @Override
             @SuppressLint("DiscouragedApi")
-            protected void before(MethodHookParam param) throws Throwable {
+            protected void before(MethodHookParam param) {
                 if (!isHooked) {
                     isHooked = true;
                     Context mContext = (Context) XposedHelpers.getObjectField(param.thisObject, "mContext");
@@ -134,12 +146,13 @@ public class DualRowSignalHook extends BaseHook {
                 }
             }
         });
+    }
 
+    private void getMobileLevel() {
         if (isMoreHyperOSVersion(1f)) {
-
             MethodHook stateUpdateHook = new MethodHook() {
                 @Override
-                protected void before(final MethodHookParam param) throws Throwable {
+                protected void before(final MethodHookParam param) {
                     Object mobileIconState = param.args[0];
                     boolean visible = (boolean) XposedHelpers.getObjectField(mobileIconState, "visible");
                     boolean airplane = (boolean) XposedHelpers.getObjectField(mobileIconState, "airplane");
@@ -152,7 +165,7 @@ public class DualRowSignalHook extends BaseHook {
                 }
 
                 @Override
-                protected void after(final MethodHookParam param) throws Throwable {
+                protected void after(final MethodHookParam param) {
                     int subStrengthId = (int) XposedHelpers.getAdditionalInstanceField(param.thisObject, "subStrengthId");
                     if (subStrengthId < 0) return;
                     Object mSmallHd = XposedHelpers.getObjectField(param.thisObject, "mSmallHd");
@@ -162,14 +175,13 @@ public class DualRowSignalHook extends BaseHook {
                 }
             };
 
-            hookAllMethods("com.android.systemui.statusbar.StatusBarMobileView", "initViewState", stateUpdateHook);
-            hookAllMethods("com.android.systemui.statusbar.StatusBarMobileView", "updateState", stateUpdateHook);
-
+            hookAllMethods("com.android.systemui.statusbar.StatusBarMobileView", lpparam.classLoader, "initViewState", stateUpdateHook);
+            hookAllMethods("com.android.systemui.statusbar.StatusBarMobileView", lpparam.classLoader, "updateState", stateUpdateHook);
         }
 
         MethodHook beforeUpdate = new MethodHook() {
             @Override
-            protected void before(final MethodHookParam param) throws Throwable {
+            protected void before(final MethodHookParam param) {
                 Object mobileIconState = param.args[0];
                 boolean visible = (boolean) XposedHelpers.getObjectField(mobileIconState, "visible");
                 boolean airplane = (boolean) XposedHelpers.getObjectField(mobileIconState, "airplane");
@@ -184,7 +196,7 @@ public class DualRowSignalHook extends BaseHook {
         };
         MethodHook afterUpdate = new MethodHook() {
             @Override
-            protected void after(final MethodHookParam param) throws Throwable {
+            protected void after(final MethodHookParam param) {
                 int subStrengthId = (int) XposedHelpers.getAdditionalInstanceField(param.thisObject, "subStrengthId");
                 if (subStrengthId < 0) return;
                 Object mSmallHd = XposedHelpers.getObjectField(param.thisObject, "mSmallHd");
@@ -195,11 +207,12 @@ public class DualRowSignalHook extends BaseHook {
         };
         hookAllMethods("com.android.systemui.statusbar.StatusBarMobileView", lpparam.classLoader, "applyMobileState", beforeUpdate);
         hookAllMethods("com.android.systemui.statusbar.StatusBarMobileView", lpparam.classLoader, "applyMobileState", afterUpdate);
+    }
 
-
+    private void resetImageDrawable(HashMap<String, Integer> dualSignalResMap) {
         MethodHook resetImageDrawable = new MethodHook() {
             @Override
-            protected void before(final MethodHookParam param) throws Throwable {
+            protected void before(final MethodHookParam param) {
                 int subStrengthId = (int) XposedHelpers.getAdditionalInstanceField(param.thisObject, "subStrengthId");
                 if (subStrengthId < 0) return;
                 if (subStrengthId == 6) subStrengthId = 0;
@@ -239,57 +252,68 @@ public class DualRowSignalHook extends BaseHook {
             }
         };
         findAndHookMethod("com.android.systemui.statusbar.StatusBarMobileView", lpparam.classLoader, "applyDarknessInternal", resetImageDrawable);
-        int rightMargin = mPrefsMap.getInt("system_ui_statusbar_mobile_network_icon_right_margin", 0);
-        int leftMargin = mPrefsMap.getInt("system_ui_statusbar_mobile_network_icon_left_margin", 0);
-        int iconScale = mPrefsMap.getInt("system_ui_statusbar_mobile_network_icon_size", 10); // 图标缩放
-        int verticalOffset = mPrefsMap.getInt("system_ui_statusbar_mobile_network_icon_vertical_offset", 8);
-        if (rightMargin > 0 || leftMargin > 0 || iconScale != 10 || verticalOffset != 8) {
-            findAndHookMethod("com.android.systemui.statusbar.StatusBarMobileView", "init", new MethodHook() {
+    }
+
+    private void setDualRowStyleMargin(View mView, View mMobile, View mSmallRoaming) {
+        int rightSpacing =  dp2px(rightMargin * 0.5f);
+        int leftSpacing = dp2px(leftMargin * 0.5f);
+        mView.setPadding(leftSpacing, 0, rightSpacing, 0);
+
+        if (verticalOffset != 8) {
+            float marginTop = dp2px((verticalOffset - 8) * 0.5f);
+            FrameLayout mobileIcon = (FrameLayout) mMobile.getParent();
+            mobileIcon.setTranslationY(marginTop);
+        }
+
+        if (iconScale != 10) {
+            FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMobile.getLayoutParams();
+            int mIconHeight = dp2px(20 * iconScale / 10f);
+
+            if (layoutParams == null) {
+                layoutParams = new FrameLayout.LayoutParams(-2, mIconHeight);
+            } else {
+                layoutParams.height = mIconHeight;
+            }
+            layoutParams.gravity = Gravity.CENTER;
+            mMobile.setLayoutParams(layoutParams);
+            mSmallRoaming.setLayoutParams(layoutParams);
+        }
+    }
+
+    private void getDualRowView(XC_MethodHook.MethodHookParam param) {
+        LinearLayout mobileView;
+        View mMobile;
+        View mSmallRoaming;
+
+        if (isMoreHyperOSVersion(1f)) {
+            mobileView = (LinearLayout) param.getResult();
+            mMobile = (View) XposedHelpers.getObjectField(param.getResult(), "mMobile");
+            mSmallRoaming = (View) XposedHelpers.getObjectField(param.getResult(), "mSmallRoaming");
+
+            setDualRowStyleMargin(mobileView, mMobile, mSmallRoaming); // 边距设置
+        } else {
+            mobileView = (LinearLayout) param.thisObject;
+            mMobile = (View) XposedHelpers.getObjectField(param.thisObject, "mMobile");
+            mSmallRoaming = (View) XposedHelpers.getObjectField(param.thisObject, "mSmallRoaming");
+
+            setDualRowStyleMargin(mobileView, mMobile, mSmallRoaming); // 边距设置
+        }
+    }
+
+    private void setDualRowStyle() {
+       if (rightMargin > 0 || leftMargin > 0 || iconScale != 10 || verticalOffset != 8) {
+            MethodHook styleHook = new MethodHook() {
                 @Override
-                protected void after(final MethodHookParam param) throws Throwable {
-                    LinearLayout mobileView = (LinearLayout) param.thisObject;
-                    Context mContext = mobileView.getContext();
-                    Resources res = mContext.getResources();
-                    int rightSpacing = (int) TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP,
-                        rightMargin * 0.5f,
-                        res.getDisplayMetrics()
-                    );
-                    int leftSpacing = (int) TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP,
-                        leftMargin * 0.5f,
-                        res.getDisplayMetrics()
-                    );
-                    mobileView.setPadding(leftSpacing, 0, rightSpacing, 0);
-                    View mMobile = (View) XposedHelpers.getObjectField(param.thisObject, "mMobile");
-                    if (verticalOffset != 8) {
-                        float marginTop = TypedValue.applyDimension(
-                            TypedValue.COMPLEX_UNIT_DIP,
-                            (verticalOffset - 8) * 0.5f,
-                            res.getDisplayMetrics()
-                        );
-                        FrameLayout mobileIcon = (FrameLayout) mMobile.getParent();
-                        mobileIcon.setTranslationY(marginTop);
-                    }
-                    if (iconScale != 10) {
-                        View mSmallRoaming = (View) XposedHelpers.getObjectField(param.thisObject, "mSmallRoaming");
-                        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMobile.getLayoutParams();
-                        int mIconHeight = (int) TypedValue.applyDimension(
-                            TypedValue.COMPLEX_UNIT_DIP,
-                            20 * iconScale / 10f,
-                            res.getDisplayMetrics()
-                        );
-                        if (layoutParams == null) {
-                            layoutParams = new FrameLayout.LayoutParams(-2, mIconHeight);
-                        } else {
-                            layoutParams.height = mIconHeight;
-                        }
-                        layoutParams.gravity = Gravity.CENTER;
-                        mMobile.setLayoutParams(layoutParams);
-                        mSmallRoaming.setLayoutParams(layoutParams);
-                    }
+                protected void after(final MethodHookParam param) {
+                    getDualRowView(param);
                 }
-            });
+            };
+
+            if (isMoreHyperOSVersion(1f)) {
+                findAndHookMethod("com.android.systemui.statusbar.StatusBarMobileView", "fromContext", Context.class, String.class, styleHook);
+            } else {
+                findAndHookMethod("com.android.systemui.statusbar.StatusBarMobileView", "init", styleHook);
+            }
         }
     }
 }

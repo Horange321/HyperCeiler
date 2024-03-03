@@ -24,7 +24,6 @@ import static com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.isAndroidVers
 import com.sevtinge.hyperceiler.module.base.BaseModule;
 import com.sevtinge.hyperceiler.module.hook.home.AnimDurationRatio;
 import com.sevtinge.hyperceiler.module.hook.home.FreeFormCountForHome;
-import com.sevtinge.hyperceiler.module.hook.home.HideNavigationBar;
 import com.sevtinge.hyperceiler.module.hook.home.HomePortraitReverse;
 import com.sevtinge.hyperceiler.module.hook.home.LockApp;
 import com.sevtinge.hyperceiler.module.hook.home.MaxFreeForm;
@@ -73,6 +72,7 @@ import com.sevtinge.hyperceiler.module.hook.home.mipad.EnableHideGestureLine;
 import com.sevtinge.hyperceiler.module.hook.home.mipad.EnableMoreSetting;
 import com.sevtinge.hyperceiler.module.hook.home.navigation.BackGestureAreaHeight;
 import com.sevtinge.hyperceiler.module.hook.home.navigation.BackGestureAreaWidth;
+import com.sevtinge.hyperceiler.module.hook.home.navigation.HideNavigationBar;
 import com.sevtinge.hyperceiler.module.hook.home.other.AllowShareApk;
 import com.sevtinge.hyperceiler.module.hook.home.other.AlwaysBlurWallpaper;
 import com.sevtinge.hyperceiler.module.hook.home.other.AlwaysShowStatusClock;
@@ -104,6 +104,7 @@ import com.sevtinge.hyperceiler.module.hook.home.recent.RemoveCardAnim;
 import com.sevtinge.hyperceiler.module.hook.home.recent.RemoveIcon;
 import com.sevtinge.hyperceiler.module.hook.home.recent.TaskViewHorizontal;
 import com.sevtinge.hyperceiler.module.hook.home.recent.TaskViewVertical;
+import com.sevtinge.hyperceiler.module.hook.home.recent.UnlockPin;
 import com.sevtinge.hyperceiler.module.hook.home.title.AnimParamCustom;
 import com.sevtinge.hyperceiler.module.hook.home.title.BigIconCorner;
 import com.sevtinge.hyperceiler.module.hook.home.title.DisableHideFile;
@@ -204,6 +205,7 @@ public class Home extends BaseModule {
         initHook(FreeformCardBackgroundColor.INSTANCE);
         initHook(CardTextColor.INSTANCE);
         initHook(CardTextSize.INSTANCE);
+        initHook(UnlockPin.INSTANCE, mPrefsMap.getBoolean("home_recent_unlock_pin"));
         initHook(RecentText.INSTANCE, !Objects.equals(mPrefsMap.getString("home_recent_text", ""), ""));
         initHook(RemoveIcon.INSTANCE, mPrefsMap.getBoolean("home_recent_remove_icon"));
         initHook(RecentResource.INSTANCE, mPrefsMap.getInt("task_view_corners", 20) != 20 ||

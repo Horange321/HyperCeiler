@@ -195,6 +195,7 @@
     <string name="search">Search</string>
     <string name="floating_window">Freeform</string>
     <string name="save_to_screen_title">Specification save location</string>
+    <string name="only_new_version_can_do">Only newer versions supported</string>
     <string name="system_ui_statusbar_indicator_default_title">Default</string>
     <string name="system_ui_statusbar_indicator_expand_title">Expand</string>
     <string name="system_ui_statusbar_indicator_fixedcontent_width">Fix content width</string>
@@ -297,6 +298,10 @@
     <string name="control_center_sunshine_mode_default">Close</string>
     <string name="control_center_sunshine_mode_one">System default mode</string>
     <string name="control_center_sunshine_mode_two">Force maximum brightness</string>
+    <string name="security_center_flash_light_default">Close</string>
+    <string name="security_center_flash_light_1">Default write mode</string>
+    <string name="security_center_flash_light_2">Write mode one</string>
+    <string name="security_center_flash_light_3">Write Mode two</string>
     <string name="control_center_5g_off">Off</string>
     <string name="control_center_5g_v1">5G Style One</string>
     <string name="control_center_5g_v2">5G Style Two</string>
@@ -385,6 +390,7 @@
     <string name="system_framework_other_use_original_animation">Transition animations use native styles</string>
     <string name="system_framework_other_speed_install">Speed Install</string>
     <string name="system_framework_other_speed_install_desc">Install to running memory to speed up installation</string>
+    <string name="system_framework_other_rotation_button">Rotation recommendations</string>
     <string name="system_framework_other_thermal_brightness">Disable automatic screen brightness reduction</string>
     <string name="system_framework_other_thermal_brightness_more">Only automatically reduces screen brightness not caused by temperature control</string>
     <string name="system_framework_other_disable_cleaner">Disable kill background apps</string>
@@ -404,6 +410,8 @@
     <string name="system_framework_core_patch_auth_creak_desc">Allows install apps after modify file in apk (ignore invalid digest error)</string>
     <string name="system_framework_disable_integrity">Disable system integrity checks</string>
     <string name="system_framework_disable_integrity_desc">Automatic recovery of tampered content is prohibited. When the \"Disable digest verify\" function is turned on, it will be enabled by default.\nOnly supports Android 13 and above</string>
+    <string name="system_framework_core_patch_shared_user">Bypass shared user signature verify</string>
+    <string name="system_framework_core_patch_shared_user_desc">Allow installation of apps that differ from their shared user signatures (<b>Needs to also turn on "Disable Package Manager Signature Verification" </b>)\n\nThis feature is somewhat dangerous and should only be enabled when needed</string>
     <string name="system_framework_core_patch_digest_creak">Disable compare signatures</string>
     <string name="system_framework_core_patch_digest_creak_desc">Allow re-install app with different signatures</string>
     <string name="system_framework_core_patch_use_pre_signature">Use installed signatures</string>
@@ -531,6 +539,7 @@
     <string name="system_ui_navigation_title">Navigation</string>
     <string name="system_ui_navigation_handle_title">Handle line</string>
     <string name="system_ui_hide_navigation_bar">Hide Navigation Bar</string>
+    <string name="system_ui_hide_navigation_bar_toast">Don\'t switch navigation keys</string>
     <string name="system_ui_hide_navigation_bar_more">Please restart both the Miui Home and SystemUi scopes</string>
     <string name="system_ui_navigation_handle_custom">Custom handle line</string>
     <string name="system_ui_navigation_handle_custom_height">Height</string>
@@ -595,8 +604,8 @@
     <string name="system_ui_status_bar_icon_small_hd">Small HD icon</string>
     <string name="system_ui_status_bar_icon_big_hd">Big HD icon</string>
     <string name="system_ui_status_bar_icon_mobile_network_signal_no_card">No SIM card icon</string>
-    <string name="system_ui_status_bar_icon_mobile_network_signal_card_1">SIM card 1 signal icon</string>
-    <string name="system_ui_status_bar_icon_mobile_network_signal_card_2">SIM card 2 signal icon</string>
+    <string name="system_ui_status_bar_icon_mobile_network_hide_card_1">Hide SIM card 1 signal icon</string>
+    <string name="system_ui_status_bar_icon_mobile_network_hide_card_2">Hide SIM card 2 signal icon</string>
     <string name="system_ui_status_bar_icon_mobile_network_type">Display logic</string>
     <string name="system_ui_status_bar_big_mobile_network_type">Big Network Type Icon</string>
     <string name="system_ui_status_bar_icon_location">Location</string>
@@ -605,6 +614,7 @@
     <string name="system_ui_status_bar_icon_alarm_clock_n">Show alarm icon only before alarm goes off</string>
     <string name="system_ui_status_bar_icon_alarm_clock_n_format">%d hours</string>
     <string name="system_ui_status_bar_icon_airplane">Airplane mode</string>
+    <string name="system_ui_status_bar_icon_roaming">Hide roaming icon</string>
     <string name="system_ui_status_bar_icon_vowifi">Hide VoWiFi icon</string>
     <string name="system_ui_status_bar_icon_volte">Hide VoLTE icon</string>
     <string name="system_ui_status_bar_icon_headset">Headset</string>
@@ -865,7 +875,8 @@
     <string name="system_settings_develop_title">Developer options</string>
     <string name="system_settings_apps_freezer">Force showing freeze cached apps</string>
     <string name="system_settings_apps_freezer_more">Once enabled, this feature can be found in \"Developer Options,\" but its functionality is not guaranteed</string>
-    <string name="system_settings_develop_speed_mode">Extreme mode</string>
+    <string name="system_settings_develop_speed_mode">Unlock Extreme Mode</string>
+    <string name="system_settings_develop_max_fps">Unlock to force display peak refresh rate</string>
     <string name="system_settings_develop_speed_mode_desc">The entry will not be displayed after opening on unsupported models</string>
     <string name="system_settings_window_animation_scale">Window Animation Zoom</string>
     <string name="system_settings_transition_animation_scale">Transition Animation Scaling</string>
@@ -873,7 +884,8 @@
     <string name="system_settings_allow_never_lock_screen">Allow never lock screen</string>
     <!--Themes-->
     <string name="theme_manager">Themes</string>
-    <string name="theme_manager_version_code_modify">Disable MIUI version detection</string>
+    <string name="theme_manager_version_code_modify">Adjust detection version</string>
+    <string name="theme_manager_version_code_modify_desc">Adjust the detected version to use some themes that are not adapted to the new version</string>
     <string name="theme_manager_diable_ads">Disable ads</string>
     <string name="theme_manager_diable_ads_desc">Replace \"guess what you like\" ads with blank cards, and remove the rest of the ads completely</string>
     <string name="theme_manager_enable_pad_theme">Enable Pad theme</string>
@@ -1097,6 +1109,7 @@
     <string name="home_recent">Recent</string>
     <string name="home_recent_animation_speed">Animation speed</string>
     <string name="home_recent_disable_wallpaper_dimming">Disable wallpaper dimming</string>
+    <string name="home_recent_unlock_pin">Unlock pinned apps</string>
     <string name="home_recent_hide_status_bar_in_task_view">Hide status bar in task view</string>
     <string name="home_recent_hide_freeform">Hide freeform button</string>
     <string name="home_recent_hide_clean_up">Hide clean up button</string>
@@ -1280,7 +1293,6 @@
     <string name="security_center_dolby_open">Close the Dolby pop-up window</string>
     <string name="security_center_show_battery_temperature">Show battery temperature</string>
     <string name="security_center_show_battery_health">Show detailed battery health</string>
-    <string name="security_center_show_battery_health_desc">Only newer versions supported</string>
     <string name="security_center_ai_clipboard">Protect clipboard</string>
     <string name="security_center_blur_location">Lower positioning accuracy</string>
     <string name="security_center_gms_open">GMS Service</string>

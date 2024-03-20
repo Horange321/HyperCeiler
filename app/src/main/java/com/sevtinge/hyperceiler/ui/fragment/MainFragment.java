@@ -18,16 +18,29 @@
  */
 package com.sevtinge.hyperceiler.ui.fragment;
 
+import static com.sevtinge.hyperceiler.utils.DisplayUtils.dip2px;
+import static com.sevtinge.hyperceiler.utils.DisplayUtils.sp2px;
 import static com.sevtinge.hyperceiler.utils.api.VoyagerApisKt.isPad;
 import static com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.getBaseOs;
 import static com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.getRomAuthor;
 import static com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.isAndroidVersion;
 import static com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.isMoreHyperOSVersion;
 
+import android.os.Bundle;
+import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.OnApplyWindowInsetsListener;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.sevtinge.hyperceiler.R;
 import com.sevtinge.hyperceiler.ui.MainActivityContextHelper;
 import com.sevtinge.hyperceiler.ui.fragment.base.SettingsPreferenceFragment;
-import com.sevtinge.hyperceiler.utils.devicesdk.DeviceSDKKt;
+import com.sevtinge.hyperceiler.utils.PackagesUtils;
 import com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt;
 
 import java.util.Objects;
@@ -36,6 +49,8 @@ import moralnorm.preference.Preference;
 
 public class MainFragment extends SettingsPreferenceFragment {
 
+    Preference mCamera;
+    Preference mCameraNew;
     Preference mPowerSetting;
     Preference mMTB;
     Preference mSecurityCenter;
@@ -54,6 +69,8 @@ public class MainFragment extends SettingsPreferenceFragment {
 
     @Override
     public void initPrefs() {
+        mCamera = findPreference("prefs_key_camera");
+        mCameraNew = findPreference("prefs_key_camera_new");
         mPowerSetting = findPreference("prefs_key_powerkeeper");
         mMTB = findPreference("prefs_key_mtb");
         mSecurityCenter = findPreference("prefs_key_security_center");
@@ -64,8 +81,10 @@ public class MainFragment extends SettingsPreferenceFragment {
         mTip = findPreference("prefs_key_tip");
         mHeadtipWarn = findPreference("prefs_key_headtip_warn");
 
-        mPowerSetting.setVisible(!isAndroidVersion(30));
-        mMTB.setVisible(!isAndroidVersion(30));
+        mCamera.setVisible(!isMoreHyperOSVersion(1f) && !PackagesUtils.checkAppStatus(getContext(), "com.android.camera"));
+        mCameraNew.setVisible(isMoreHyperOSVersion(1f) && !PackagesUtils.checkAppStatus(getContext(), "com.android.camera"));
+        mPowerSetting.setVisible(!isAndroidVersion(30) && !PackagesUtils.checkAppStatus(getContext(), "com.miui.powerkeeper"));
+        mMTB.setVisible(!isAndroidVersion(30) && !PackagesUtils.checkAppStatus(getContext(), "com.xiaomi.mtb"));
 
         if (isMoreHyperOSVersion(1f)) {
             mAod.setTitle(R.string.aod_hyperos);
@@ -100,18 +119,41 @@ public class MainFragment extends SettingsPreferenceFragment {
 
     public boolean getIsOfficialRom() {
         return (
-            !com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.getBaseOs().startsWith("V") &&
-            !com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.getBaseOs().startsWith("Xiaomi") &&
-            !com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.getBaseOs().startsWith("Redmi") &&
-            !com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.getBaseOs().startsWith("POCO") &&
-            !com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.getBaseOs().isEmpty()) ||
-            !getRomAuthor().isEmpty() ||
-            Objects.equals(SystemSDKKt.getHost(), "xiaomi.eu") ||
-            !SystemSDKKt.getHost().startsWith("pangu-build-component-system");
+                !getBaseOs().startsWith("V") &&
+                        !getBaseOs().startsWith("Xiaomi") &&
+                        !getBaseOs().startsWith("Redmi") &&
+                        !getBaseOs().startsWith("POCO") &&
+                        !getBaseOs().isEmpty()
+        ) ||
+        !getRomAuthor().isEmpty() ||
+        Objects.equals(SystemSDKKt.getHost(), "xiaomi.eu") ||
+        (
+           !SystemSDKKt.getHost().startsWith("pangu-build-component-system") &&
+           !SystemSDKKt.getHost().startsWith("non-pangu-pod-g0sww")
+        );
     }
+
 
     public void isSignPass() {
         mHeadtipWarn.setTitle(R.string.headtip_warn_sign_verification_failed);
         mHeadtipWarn.setVisible(!mainActivityContextHelper.isSignCheckPass());
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        RecyclerView recyclerView = view.findViewById(moralnorm.preference.R.id.recycler_view);
+        ViewCompat.setOnApplyWindowInsetsListener(recyclerView, new OnApplyWindowInsetsListener() {
+            @NonNull
+            @Override
+            public WindowInsetsCompat onApplyWindowInsets(@NonNull View v, @NonNull WindowInsetsCompat insets) {
+                Insets inset = Insets.max(insets.getInsets(WindowInsetsCompat.Type.systemBars()),
+                        insets.getInsets(WindowInsetsCompat.Type.displayCutout()));
+                // 22dp + 2dp + 12sp + 10dp + 18dp + 0.5dp + inset.bottom + 4dp(?)
+                v.setPadding(inset.left, 0, inset.right, inset.bottom + dip2px(requireContext(), 56.5F) + sp2px(requireContext(),12));
+                return insets;
+            }
+        });
     }
 }

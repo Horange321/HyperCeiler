@@ -25,10 +25,10 @@ jobs:
           fetch-depth: 0
           submodules: true
 
-      - name: Set up JDK 20
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '20'
+          java-version: '21'
           distribution: 'temurin'
           cache: gradle
 
@@ -69,10 +69,7 @@ jobs:
 
       - name: Commit
         run: |
-          mkdir -p ${{ github.workspace }}/git_clone
-          git clone ${{ github.server_url }}/${{ github.repository }} ${{ github.workspace }}/git_clone -b ${{ github.ref_name }}
-          cd ${{ github.workspace }}/git_clone
-          text="$(git log ${{ github.event.before }}..${{ github.event.after }} --pretty=format:'%h %s')"
+          text="${{ github.event.sha }} ${{ github.event.head_commit.message }}"
           echo "commit=$(echo $text | sed 's/\([][\\`.*^$\/+?{}()=!|:-]\)/\\\1/g')" >> $GITHUB_ENV
 
       - name: Post to Canary Channel

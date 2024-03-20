@@ -19,7 +19,6 @@
 package com.sevtinge.hyperceiler.module.app;
 
 import static com.sevtinge.hyperceiler.utils.api.VoyagerApisKt.isPad;
-import static com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.isAndroidVersion;
 
 import com.sevtinge.hyperceiler.module.base.BaseModule;
 import com.sevtinge.hyperceiler.module.hook.home.AnimDurationRatio;
@@ -79,7 +78,6 @@ import com.sevtinge.hyperceiler.module.hook.home.other.AlwaysShowStatusClock;
 import com.sevtinge.hyperceiler.module.hook.home.other.BlurRadius;
 import com.sevtinge.hyperceiler.module.hook.home.other.BlurWhenShowShortcutMenu;
 import com.sevtinge.hyperceiler.module.hook.home.other.DisableHideGoogle;
-import com.sevtinge.hyperceiler.module.hook.home.other.FixAndroidRS;
 import com.sevtinge.hyperceiler.module.hook.home.other.FreeformShortcutMenu;
 import com.sevtinge.hyperceiler.module.hook.home.other.HomeMode;
 import com.sevtinge.hyperceiler.module.hook.home.other.InfiniteScroll;
@@ -102,6 +100,7 @@ import com.sevtinge.hyperceiler.module.hook.home.recent.RecentResource;
 import com.sevtinge.hyperceiler.module.hook.home.recent.RecentText;
 import com.sevtinge.hyperceiler.module.hook.home.recent.RemoveCardAnim;
 import com.sevtinge.hyperceiler.module.hook.home.recent.RemoveIcon;
+import com.sevtinge.hyperceiler.module.hook.home.recent.RemoveLeftShare;
 import com.sevtinge.hyperceiler.module.hook.home.recent.TaskViewHorizontal;
 import com.sevtinge.hyperceiler.module.hook.home.recent.TaskViewVertical;
 import com.sevtinge.hyperceiler.module.hook.home.recent.UnlockPin;
@@ -111,6 +110,7 @@ import com.sevtinge.hyperceiler.module.hook.home.title.DisableHideFile;
 import com.sevtinge.hyperceiler.module.hook.home.title.DisableHideTheme;
 import com.sevtinge.hyperceiler.module.hook.home.title.DownloadAnimation;
 import com.sevtinge.hyperceiler.module.hook.home.title.EnableIconMonoChrome;
+import com.sevtinge.hyperceiler.module.hook.home.title.FakeNonDefaultIcon;
 import com.sevtinge.hyperceiler.module.hook.home.title.FixAnimation;
 import com.sevtinge.hyperceiler.module.hook.home.title.HiddenAllTitle;
 import com.sevtinge.hyperceiler.module.hook.home.title.IconTitleColor;
@@ -190,7 +190,7 @@ public class Home extends BaseModule {
         // 抽屉
         initHook(AppDrawer.INSTANCE, mPrefsMap.getBoolean("home_drawer_all") ||
             mPrefsMap.getBoolean("home_drawer_editor"));
-        initHook(AllAppsContainerViewBlur.INSTANCE, mPrefsMap.getBoolean("home_drawer_blur") && !isAndroidVersion(30));
+        initHook(AllAppsContainerViewBlur.INSTANCE, mPrefsMap.getBoolean("home_drawer_blur"));
         initHook(new PinyinArrangement(), mPrefsMap.getBoolean("home_drawer_pinyin"));
 
         // 最近任务
@@ -208,6 +208,7 @@ public class Home extends BaseModule {
         initHook(UnlockPin.INSTANCE, mPrefsMap.getBoolean("home_recent_unlock_pin"));
         initHook(RecentText.INSTANCE, !Objects.equals(mPrefsMap.getString("home_recent_text", ""), ""));
         initHook(RemoveIcon.INSTANCE, mPrefsMap.getBoolean("home_recent_remove_icon"));
+        initHook(RemoveLeftShare.INSTANCE, mPrefsMap.getBoolean("home_recent_hide_world_circulate"));
         initHook(RecentResource.INSTANCE, mPrefsMap.getInt("task_view_corners", 20) != 20 ||
             mPrefsMap.getInt("task_view_header_height", 40) != 40);
         initHook(RealMemory.INSTANCE, mPrefsMap.getBoolean("home_recent_show_real_memory"));
@@ -221,6 +222,7 @@ public class Home extends BaseModule {
         initHook(DisableHideTheme.INSTANCE, mPrefsMap.getBoolean("home_title_disable_hide_theme"));
         initHook(DisableHideFile.INSTANCE, mPrefsMap.getBoolean("home_title_disable_hide_file"));
         initHook(DisableHideGoogle.INSTANCE, mPrefsMap.getBoolean("home_title_disable_hide_google"));
+        initHook(new FakeNonDefaultIcon(), mPrefsMap.getBoolean("fake_non_default_icon"));
         initHook(new AnimParamCustom(), mPrefsMap.getBoolean("home_title_custom_anim_param_main"));
         // initHook(new IconScaleHook()/*, mPrefsMap.getInt("home_title_icon_scale", 100) != 100*/);
 
@@ -264,14 +266,13 @@ public class Home extends BaseModule {
         initHook(BlurRadius.INSTANCE, mPrefsMap.getInt("home_other_blur_radius", 100) != 100);
         initHook(ShortcutItemCount.INSTANCE, mPrefsMap.getBoolean("home_other_shortcut_remove_restrictions"));
         initHook(ShowAllHideApp.INSTANCE); // 桌面快捷方式管理
-        initHook(FixAndroidRS.INSTANCE, mPrefsMap.getBoolean("home_other_fix_android_r_s"));
         initHook(new AllowShareApk(), mPrefsMap.getBoolean("home_other_allow_share_apk"));
 
         // 实验性功能
-        initHook(BlurWhenShowShortcutMenu.INSTANCE, mPrefsMap.getBoolean("home_other_shortcut_background_blur") && !isAndroidVersion(30));
-        initHook(FolderBlur.INSTANCE, mPrefsMap.getBoolean("home_folder_blur") && !isAndroidVersion(30));
+        initHook(BlurWhenShowShortcutMenu.INSTANCE, mPrefsMap.getBoolean("home_other_shortcut_background_blur"));
+        initHook(FolderBlur.INSTANCE, mPrefsMap.getBoolean("home_folder_blur"));
         initHook(new FoldDock(), mPrefsMap.getBoolean("home_other_fold_dock"));
-        // initHook(new AllAppsBlur(), !isAndroidVersion(30)); // ??
+        // initHook(new AllAppsBlur); // ??
         initHook(new FixAnimation(), mPrefsMap.getBoolean("home_title_fix_animation"));
         initHook(new LargeIconCornerRadius(), mPrefsMap.getBoolean("home_large_icon_enable"));
 
@@ -280,7 +281,7 @@ public class Home extends BaseModule {
         initHook(new MaxFreeForm(), mPrefsMap.getBoolean("system_framework_freeform_count"));
 
         // Fold2样式负一屏
-        initHook(new OverlapMode(), mPrefsMap.getBoolean("personal_assistant_overlap_mode") && !isAndroidVersion(30));
+        initHook(new OverlapMode(), mPrefsMap.getBoolean("personal_assistant_overlap_mode"));
 
         // Other
         initHook(new ToastSlideAgain(), mPrefsMap.getBoolean("home_other_toast_slide_again"));
@@ -289,10 +290,12 @@ public class Home extends BaseModule {
         initHook(SetDeviceLevel.INSTANCE, mPrefsMap.getBoolean("home_other_high_models"));
 
         // 小米/红米平板相关
-        boolean mMoreSetting = mPrefsMap.getBoolean("home_other_mi_pad_enable_more_setting") && isPad();
-        initHook(SetGestureNeedFingerNum.INSTANCE, mPrefsMap.getBoolean("mipad_input_need_finger_num") && isPad());
-        initHook(EnableMoreSetting.INSTANCE, mMoreSetting);
-        initHook(EnableHideGestureLine.INSTANCE, mMoreSetting);
+        if (isPad()){
+            boolean mMoreSetting = mPrefsMap.getBoolean("home_other_mi_pad_enable_more_setting");
+            initHook(SetGestureNeedFingerNum.INSTANCE, mPrefsMap.getBoolean("mipad_input_need_finger_num"));
+            initHook(EnableMoreSetting.INSTANCE, mMoreSetting);
+            initHook(EnableHideGestureLine.INSTANCE, mMoreSetting);
+        }
     }
 
 }

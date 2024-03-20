@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:myLocation="@string/system_framework_other_title">
     <PreferenceCategory android:title="@string/system_framework_screen_title">
         <SwitchPreference
             android:defaultValue="false"
             android:key="prefs_key_system_framework_screen_all_rotations"
             android:title="@string/system_framework_screen_all_rotations" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="prefs_key_system_framework_other_rotation_button"
+            android:title="@string/system_framework_other_rotation_button" />
 
         <SwitchPreference
             android:defaultValue="false"
@@ -40,12 +46,15 @@
             android:key="prefs_key_various_disable_access_device_logs"
             android:title="@string/various_disable_access_device_logs" />
 
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="prefs_key_system_framework_disable_link_turbo_toast"
+            android:title="@string/system_framework_disable_link_turbo_toast" />
 
         <SwitchPreference
             android:defaultValue="false"
             android:key="prefs_key_system_framework_allow_manage_all_notifications"
             android:title="@string/system_framework_allow_manage_all_notifications" />
-
 
         <SwitchPreference
             android:defaultValue="false"
@@ -89,11 +98,6 @@
             android:key="prefs_key_system_framework_other_speed_install"
             android:summary="@string/system_framework_other_speed_install_desc"
             android:title="@string/system_framework_other_speed_install" />
-
-        <SwitchPreference
-            android:defaultValue="true"
-            android:key="prefs_key_system_framework_other_rotation_button"
-            android:title="@string/system_framework_other_rotation_button" />
 
         <SwitchPreference
             android:defaultValue="false"
@@ -166,5 +170,4 @@
             android:title="@string/system_framework_clean_open_apps" />
 
     </PreferenceCategory>
-    <Preference android:enabled="false" />
 </PreferenceScreen>

@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:myLocation="@string/security_center"
+    app:myLocationHyper="@string/security_center_hyperos"
+    app:myLocationPad="@string/security_center_pad">
     <PreferenceCategory android:title="@string/security_center_app_title">
         <DropDownPreference
             android:defaultValue="0"
@@ -281,6 +284,12 @@
             android:title="@string/security_center_game_speed"
             app:isPreferenceVisible="false" />
 
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="prefs_key_security_center_bypass_simlock_miaccount_auth"
+            android:summary="@string/security_center_bypass_simlock_miaccount_auth_desc"
+            android:title="@string/security_center_bypass_simlock_miaccount_auth" />
+
     </PreferenceCategory>
-    <Preference android:enabled="false" />
+
 </PreferenceScreen>

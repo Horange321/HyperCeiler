@@ -27,6 +27,7 @@ import androidx.annotation.Nullable;
 
 import com.sevtinge.hyperceiler.R;
 import com.sevtinge.hyperceiler.callback.IResult;
+import com.sevtinge.hyperceiler.prefs.PreferenceHeader;
 import com.sevtinge.hyperceiler.ui.base.NavigationActivity;
 import com.sevtinge.hyperceiler.utils.BackupUtils;
 import com.sevtinge.hyperceiler.utils.Helpers;
@@ -53,30 +54,27 @@ public class MainActivity extends NavigationActivity implements IResult {
         Helpers.checkXposedActivateState(this);
         ShellInit.init(this);
         PropUtils.setProp("persist.hyperceiler.log.level",
-            (ProjectApi.isRelease() ? def : ProjectApi.isCanary() ? (def == 0 ? 3 : 4) : def));
+                (ProjectApi.isRelease() ? def : ProjectApi.isCanary() ? (def == 0 ? 3 : 4) : def));
         // test();
     }
 
     @Override
     public void error(String reason) {
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                new AlertDialog.Builder(context)
-                    .setCancelable(false)
-                    .setTitle(getResources().getString(R.string.tip))
-                    .setMessage(getResources().getString(R.string.root))
-                    .setHapticFeedbackEnabled(true)
-                    .setPositiveButton(android.R.string.ok, null)
-                    .show();
-            }
-        });
+        handler.post(() -> new AlertDialog.Builder(context)
+                .setCancelable(false)
+                .setTitle(getResources().getString(R.string.tip))
+                .setMessage(getResources().getString(R.string.root))
+                .setHapticFeedbackEnabled(true)
+                .setPositiveButton(android.R.string.ok, null)
+                .show());
     }
 
     @Override
     protected void onDestroy() {
         ShellInit.destroy();
         ThreadPoolManager.shutdown();
+        PreferenceHeader.mUninstallApp.clear();
+        PreferenceHeader.mDisableOrHiddenApp.clear();
         super.onDestroy();
     }
 

@@ -26,9 +26,13 @@ import static com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.getRomAuthor;
 import static com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.isAndroidVersion;
 import static com.sevtinge.hyperceiler.utils.devicesdk.SystemSDKKt.isMoreHyperOSVersion;
 
+import android.content.Intent;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.text.SpannableString;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -41,8 +45,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.sevtinge.hyperceiler.R;
 import com.sevtinge.hyperceiler.prefs.PreferenceHeader;
+import com.sevtinge.hyperceiler.prefs.RecommendPreference;
+import com.sevtinge.hyperceiler.prefs.TipsPreference;
 import com.sevtinge.hyperceiler.ui.MainActivityContextHelper;
 import com.sevtinge.hyperceiler.ui.fragment.base.SettingsPreferenceFragment;
+import com.sevtinge.hyperceiler.ui.fragment.helper.CantSeeAppsFragment;
 import com.sevtinge.hyperceiler.ui.fragment.helper.HomepageEntrance;
 import com.sevtinge.hyperceiler.utils.PackagesUtils;
 import com.sevtinge.hyperceiler.utils.ThreadPoolManager;
@@ -68,11 +75,30 @@ public class MainFragment extends SettingsPreferenceFragment implements Homepage
     Preference mAod;
     Preference mGuardProvider;
     Preference mMirror;
-    Preference mTip;
     Preference mHeadtipWarn;
+    Preference mHelpCantSeeApps;
+    TipsPreference mTips;
     MainActivityContextHelper mainActivityContextHelper;
+    Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            super.handleMessage(msg);
+            if (msg.what == 0x11) {
+                mTips.updateTips();
+                removeMessages(0x11);
+                sendEmptyMessageDelayed(0x11, 6000);
+            }
+        }
+    };
     private final String TAG = "MainFragment";
     public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Message message = mHandler.obtainMessage(0x11);
+        mHandler.sendMessageDelayed(message, 6000);
+    }
 
     @Override
     public int getContentResId() {
@@ -122,8 +148,11 @@ public class MainFragment extends SettingsPreferenceFragment implements Homepage
         mAod = findPreference("prefs_key_aod");
         mGuardProvider = findPreference("prefs_key_guardprovider");
         mMirror = findPreference("prefs_key_mirror");
-        mTip = findPreference("prefs_key_tip");
+        mTips = findPreference("prefs_key_tips");
         mHeadtipWarn = findPreference("prefs_key_headtip_warn");
+        mHelpCantSeeApps = findPreference("prefs_key_help_cant_see_app");
+
+        mHelpCantSeeApps.setVisible(!getSharedPreferences().getBoolean("prefs_key_help_cant_see_apps_switch", false));
 
         mCamera.setVisible(!isMoreHyperOSVersion(1f) && !PackagesUtils.checkAppStatus(getContext(), "com.android.camera"));
         mCameraNew.setVisible(isMoreHyperOSVersion(1f) && !PackagesUtils.checkAppStatus(getContext(), "com.android.camera"));
@@ -149,11 +178,11 @@ public class MainFragment extends SettingsPreferenceFragment implements Homepage
         }
 
         mainActivityContextHelper = new MainActivityContextHelper(requireContext());
-        String randomTip = mainActivityContextHelper.getRandomTip();
-        mTip.setSummary("Tip: " + randomTip);
 
         isOfficialRom();
         if (!getIsOfficialRom()) isSignPass();
+
+        mTips = findPreference("prefs_key_tips");
     }
 
     public void isOfficialRom() {

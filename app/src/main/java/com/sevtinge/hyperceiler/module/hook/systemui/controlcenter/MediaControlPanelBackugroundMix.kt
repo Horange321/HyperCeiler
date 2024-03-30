@@ -26,6 +26,7 @@ import android.graphics.drawable.*
 import android.hardware.*
 import android.media.*
 import android.os.*
+import android.util.*
 import android.view.*
 import android.widget.*
 import androidx.annotation.*
@@ -34,6 +35,7 @@ import com.github.kyuubiran.ezxhelper.ClassUtils.loadClassOrNull
 import com.github.kyuubiran.ezxhelper.HookFactory.`-Static`.createAfterHook
 import com.github.kyuubiran.ezxhelper.HookFactory.`-Static`.createBeforeHook
 import com.github.kyuubiran.ezxhelper.HookFactory.`-Static`.createHook
+import com.github.kyuubiran.ezxhelper.Log
 import com.github.kyuubiran.ezxhelper.ObjectHelper.Companion.objectHelper
 import com.github.kyuubiran.ezxhelper.finders.MethodFinder.`-Static`.methodFinder
 import com.sevtinge.hyperceiler.module.base.*
@@ -50,6 +52,12 @@ private var artwork: Icon? = null
 
 //from https://github.com/YuKongA/MediaControl-BlurBg/blob/752de17a31d940683648cee7b957d4ff48d381a3/app/src/main/kotlin/top/yukonga/mediaControlBlur/MainHook.kt
 class MediaControlPanelBackgroundMix : BaseHook() {
+    private val radius by lazy {
+        mPrefsMap.getInt("system_ui_control_center_media_control_panel_background_mix_blur_radius", 40)
+    }
+    private val overlay by lazy {
+        mPrefsMap.getInt("system_ui_control_center_media_control_panel_background_mix_overlay", 20)
+    }
     @RequiresApi(Build.VERSION_CODES.S)
     override fun init() {
         EzXHelper.initHandleLoadPackage(lpparam)
@@ -76,27 +84,22 @@ class MediaControlPanelBackgroundMix : BaseHook() {
         playerTwoCircleView: Class<*>?
     ) {
         try {
-            mediaControlPanel?.methodFinder()?.filterByName("attachPlayer")?.first()
-                ?.createAfterHook {
-                    val context = AndroidAppHelper.currentApplication().applicationContext
+            mediaControlPanel?.methodFinder()?.filterByName("attachPlayer")?.first()?.createAfterHook {
+                val context = AndroidAppHelper.currentApplication().applicationContext
 
-                    val isBackgroundBlurOpened =
-                        XposedHelpers.callStaticMethod(notificationUtil, "isBackgroundBlurOpened", context) as Boolean
-                    if (!isBackgroundBlurOpened) return@createAfterHook
+                val isBackgroundBlurOpened = XposedHelpers.callStaticMethod(notificationUtil, "isBackgroundBlurOpened", context) as Boolean
+                if (!isBackgroundBlurOpened) return@createAfterHook
 
-                    val mMediaViewHolder =
-                        it.thisObject.objectHelper().getObjectOrNullUntilSuperclass("mMediaViewHolder") ?: return@createAfterHook
-                    val mediaBg =
-                        mMediaViewHolder.objectHelper().getObjectOrNullAs<ImageView>("mediaBg") ?: return@createAfterHook
-                    val radius = mPrefsMap.getInt("system_ui_control_center_media_control_panel_background_mix_blur_radius", 40)
+                val mMediaViewHolder = it.thisObject.objectHelper().getObjectOrNullUntilSuperclass("mMediaViewHolder") ?: return@createAfterHook
+                val mediaBg = mMediaViewHolder.objectHelper().getObjectOrNullAs<ImageView>("mediaBg") ?: return@createAfterHook
 
-                    mediaBg.apply {
-                        setMiViewBlurMode(1)
-                        setMiBackgroundBlurRadius(radius)
-                        setBlurRoundRect(getNotificationElementRoundRect(context))
-                        setMiBackgroundBlendColors(getNotificationElementBlendColors(context), 1f)
-                    }
+                mediaBg.apply {
+                    setMiViewBlurMode(1)
+                    setMiBackgroundBlurRadius(radius)
+                    setBlurRoundRect(getNotificationElementRoundRect(context))
+                    setMiBackgroundBlendColors(getNotificationElementBlendColors(context), 1f)
                 }
+            }
 
             miuiMediaControlPanel?.methodFinder()?.filterByName("bindPlayer")?.first()
                 ?.createAfterHook {
@@ -160,8 +163,8 @@ class MediaControlPanelBackgroundMix : BaseHook() {
                             action2?.setColorFilter(Color.BLACK)
                             action3?.setColorFilter(Color.BLACK)
                             action4?.setColorFilter(Color.BLACK)
-                            seekBar?.progressDrawable?.colorFilter = colorFilter(Color.BLACK)
-                            seekBar?.thumb?.colorFilter = colorFilter(Color.BLACK)
+                            seekBar?.progressDrawable?.colorFilter = colorFilter(Color.argb(165, 0, 0, 0))
+                            seekBar?.thumb?.colorFilter = colorFilter(if (mPrefsMap.getStringAsInt("system_ui_control_center_media_control_progress_mode", 0) == 2) Color.TRANSPARENT else Color.argb(165, 0, 0, 0))
                             elapsedTimeView?.setTextColor(grey)
                             totalTimeView?.setTextColor(grey)
                         } else {
@@ -173,8 +176,8 @@ class MediaControlPanelBackgroundMix : BaseHook() {
                             action2?.setColorFilter(Color.WHITE)
                             action3?.setColorFilter(Color.WHITE)
                             action4?.setColorFilter(Color.WHITE)
-                            seekBar?.progressDrawable?.colorFilter = colorFilter(Color.WHITE)
-                            seekBar?.thumb?.colorFilter = colorFilter(Color.WHITE)
+                            seekBar?.progressDrawable?.colorFilter = colorFilter(Color.argb(165, 255, 255, 255))
+                            seekBar?.thumb?.colorFilter = colorFilter((if (mPrefsMap.getStringAsInt("system_ui_control_center_media_control_progress_mode", 0) == 2) Color.TRANSPARENT else Color.argb(165, 255, 255, 255)))
                             elapsedTimeView?.setTextColor(grey)
                             totalTimeView?.setTextColor(grey)
                         }
@@ -216,7 +219,7 @@ class MediaControlPanelBackgroundMix : BaseHook() {
                         albumView?.setImageDrawable(BitmapDrawable(context.resources, newBitmap))
 
                         if (appIcon?.parent != null) {
-                            (appIcon.parent as ViewGroup).removeView(appIcon)
+                            (appIcon?.parent as ViewGroup?)?.removeView(appIcon)
                         }
                     }
                 }
@@ -389,10 +392,7 @@ class MediaControlPanelBackgroundMix : BaseHook() {
 
                         val backgroundColorMode = if (isDarkMode()) 0 else 248
                         val backgroundColor = Color.argb(
-                            mPrefsMap.getInt(
-                                "system_ui_control_center_media_control_panel_background_mix_overlay",
-                                20
-                            ), backgroundColorMode, backgroundColorMode, backgroundColorMode
+                            overlay, backgroundColorMode, backgroundColorMode, backgroundColorMode
                         )
 
                         // 应用颜色过滤器
@@ -407,7 +407,7 @@ class MediaControlPanelBackgroundMix : BaseHook() {
                         // 模糊处理
                         artworkLayer = BitmapDrawable(
                             imageView.resources, bigBitmap.blur(
-                                mPrefsMap.getInt("system_ui_control_center_media_control_panel_background_mix_blur_radius", 40).toFloat()
+                                radius.toFloat()
                             )
                         )
 
